@@ -5,14 +5,14 @@ import java.util.List;
 
 public class Main {
 
-    static final int NUM_INTEGERS = 100;
+    private static final int NUM_INTEGERS = 100;
 
     private static class GCDTableRow
     {
         private int number1;
         private int number2;
         private int gcd;
-        private long timeSpent;
+        private double timeSpent;
 
         public GCDTableRow() {}
 
@@ -46,11 +46,11 @@ public class Main {
             this.gcd = gcd;
         }
 
-        public long getTimeSpent() {
+        public double getTimeSpent() {
             return timeSpent;
         }
 
-        public void setTimeSpent(long timeSpent) {
+        public void setTimeSpent(double timeSpent) {
             this.timeSpent = timeSpent;
         }
     }
@@ -74,12 +74,12 @@ public class Main {
             startTime = System.nanoTime();
             gcdTable.get(i).setGcd(EuclidAlgorithm1(gcdTable.get(i).getNumber1(), gcdTable.get(i).getNumber2()));
             endTime = System.nanoTime();
-            gcdTable.get(i).setTimeSpent((endTime - startTime));
+            gcdTable.get(i).setTimeSpent((endTime - startTime) / 1000000.0);
             System.out.print("\nRow: " + (i + 1) +
                     " - GCD (" + gcdTable.get(i).getNumber1() + ", " +
                     gcdTable.get(i).getNumber2() + ") = " +
                     gcdTable.get(i).getGcd() +
-                    " - Time spent: " + gcdTable.get(i).getTimeSpent());
+                    " - Time spent: " + gcdTable.get(i).getTimeSpent() + " ms");
         }
 
         System.out.print("\nEuclid Algorithm 2");
@@ -89,12 +89,12 @@ public class Main {
             startTime = System.nanoTime();
             gcdTable.get(i).setGcd(EuclidAlgorithm2(gcdTable.get(i).getNumber1(), gcdTable.get(i).getNumber2()));
             endTime = System.nanoTime();
-            gcdTable.get(i).setTimeSpent((endTime - startTime));
+            gcdTable.get(i).setTimeSpent((endTime - startTime) / 1000000.0);
             System.out.print("\nRow: " + (i+1) +
                     " - GCD (" + gcdTable.get(i).getNumber1() + ", " +
                     gcdTable.get(i).getNumber2() + ") = " +
                     gcdTable.get(i).getGcd() +
-                    " - Time spent: " + gcdTable.get(i).getTimeSpent());
+                    " - Time spent: " + gcdTable.get(i).getTimeSpent() + " ms");
         }
     }
 
@@ -117,7 +117,17 @@ public class Main {
     private static int EuclidAlgorithm2(int a, int b)
     {
         // Guarantee a >= b > 0
-        if(!(a >= b && b > 0))
+        if(a > 0 && b > 0)
+        {
+            if(a <= b)
+            {
+                // Swap a and b
+                int temp = a;
+                a = b;
+                b = temp;
+            }
+        }
+        else
         {
             return 0;
         }
