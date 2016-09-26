@@ -8,8 +8,10 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
 import javax.swing.*;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -139,6 +141,32 @@ class Program1 {
 
         // Write the excel file - this also generates the statistics
         writeExcelFile(gcdTableAlg1, gcdTableAlg2);
+
+        // Write the excel file
+        writeConclusionsFile();
+    }
+
+    //Writes conclusion text file
+    private static void writeConclusionsFile()
+    {
+        BufferedWriter writer = null;
+        try {
+            // Create file
+              File conclusionFile = new File("Conclusions.txt");
+
+            System.out.println(conclusionFile.getCanonicalPath());
+
+            writer = new BufferedWriter(new FileWriter(conclusionFile));
+            writer.write("Out of 100 pairs of integers, the improved(?) Euclidís algorithm outperformed the original one in xx pairs; and the average saved/wasted time for one pair of integers was xx milliseconds.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                // Close the writer
+                assert writer != null;
+                writer.close();
+            } catch (Exception ignored) {}
+        }
     }
 
     // Writes the Excel file
