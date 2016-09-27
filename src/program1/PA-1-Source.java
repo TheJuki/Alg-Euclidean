@@ -12,6 +12,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,8 +24,7 @@ class Program1 {
     private static final int NUM_INTEGERS = 100;
 
     // The GCD Table Row Class
-    private static class GCDTableRow
-    {
+    private static class GCDTableRow {
         // Number 1
         private int number1;
 
@@ -37,17 +37,16 @@ class Program1 {
         // Time spent
         private double timeSpent;
 
-        public GCDTableRow() {}
+        public GCDTableRow() {
+        }
 
-        GCDTableRow(int number1, int number2)
-        {
+        GCDTableRow(int number1, int number2) {
             this.number1 = number1;
             this.number2 = number2;
         }
 
-        Object[] getRowAsArray()
-        {
-            return new Object[] {number1, number2, gcd, timeSpent};
+        Object[] getRowAsArray() {
+            return new Object[]{number1, number2, gcd, timeSpent};
         }
 
         public int getNumber1() {
@@ -91,17 +90,18 @@ class Program1 {
         // The list of the Euclid Algorithm 2 results
         List<GCDTableRow> gcdTableAlg2 = new ArrayList<>();
 
+        // Used for timing
         long startTime = 0;
         long endTime = 0;
 
+        // Used for the random integer pairs
         int num1 = 0;
         int num2 = 0;
 
         // Generate the random integer pairs for each list
-        for(int i = 0; i < NUM_INTEGERS; i++)
-        {
-            num1 = (int)(Math.random()*1000 + 1);
-            num2 = (int)(Math.random()*1000 + 1);
+        for (int i = 0; i < NUM_INTEGERS; i++) {
+            num1 = (int) (Math.random() * 1000 + 1);
+            num2 = (int) (Math.random() * 1000 + 1);
             gcdTableAlg1.add(new GCDTableRow(num1, num2));
             gcdTableAlg2.add(new GCDTableRow(num1, num2));
         }
@@ -110,11 +110,17 @@ class Program1 {
         System.out.print("------------------------------");
 
         // Perform the Euclid Algorithm 1 on all pairs
-        for(int i = 0; i < NUM_INTEGERS; i++) {
+        for (int i = 0; i < NUM_INTEGERS; i++) {
+            // Start timer
             startTime = System.nanoTime();
+            // Get GCD
             gcdTableAlg1.get(i).setGcd(EuclidAlgorithm1(gcdTableAlg1.get(i).getNumber1(), gcdTableAlg1.get(i).getNumber2()));
+            // End timer
             endTime = System.nanoTime();
+            // Subtract nanosecond times and convert to milliseconds
             gcdTableAlg1.get(i).setTimeSpent((endTime - startTime) / 1000000.0);
+
+            // Print
             System.out.print("\nRow: " + (i + 1) +
                     " - GCD (" + gcdTableAlg1.get(i).getNumber1() + ", " +
                     gcdTableAlg1.get(i).getNumber2() + ") = " +
@@ -126,38 +132,68 @@ class Program1 {
         System.out.print("------------------------------");
 
         // Perform the Euclid Algorithm 2 on all pairs
-        for(int i = 0; i < NUM_INTEGERS; i++)
-        {
+        for (int i = 0; i < NUM_INTEGERS; i++) {
+            // Start timer
             startTime = System.nanoTime();
+            // Get GCD
             gcdTableAlg2.get(i).setGcd(EuclidAlgorithm2(gcdTableAlg2.get(i).getNumber1(), gcdTableAlg2.get(i).getNumber2()));
+            // End timer
             endTime = System.nanoTime();
+            // Subtract nanosecond times and convert to milliseconds
             gcdTableAlg2.get(i).setTimeSpent((endTime - startTime) / 1000000.0);
-            System.out.print("\nRow: " + (i+1) +
+
+            // Print
+            System.out.print("\nRow: " + (i + 1) +
                     " - GCD (" + gcdTableAlg2.get(i).getNumber1() + ", " +
                     gcdTableAlg2.get(i).getNumber2() + ") = " +
                     gcdTableAlg2.get(i).getGcd() +
                     " - Time spent: " + gcdTableAlg2.get(i).getTimeSpent() + " ms");
         }
 
+        // Write the conclusion file
+        writeConclusionsFile(gcdTableAlg1, gcdTableAlg2);
+
         // Write the excel file - this also generates the statistics
         writeExcelFile(gcdTableAlg1, gcdTableAlg2);
-
-        // Write the excel file
-        writeConclusionsFile();
     }
 
     //Writes conclusion text file
-    private static void writeConclusionsFile()
-    {
+    private static void writeConclusionsFile(List<GCDTableRow> gcdTableAlg1, List<GCDTableRow> gcdTableAlg2) {
+        // Number of pairs outperformed
+        int numPairs = 0;
+
+        // The average saved/wasted time for one pair of integers (milliseconds)
+        double avgTimeSaved = 0;
+
+        // Get Number of pairs outperformed and the total saved/wasted time
+        for (int i = 0; i < NUM_INTEGERS; i++) {
+
+            // If the improved(?) Euclid's algorithm outperformed the original one in time spent
+            // add 1 to number of pairs
+            if (gcdTableAlg2.get(i).getTimeSpent() < gcdTableAlg1.get(i).getTimeSpent()) {
+                numPairs = numPairs + 1;
+            }
+
+            avgTimeSaved = avgTimeSaved + (gcdTableAlg1.get(i).getTimeSpent() - gcdTableAlg2.get(i).getTimeSpent());
+        }
+
+        // Get average from the total saved/wasted time
+        avgTimeSaved = avgTimeSaved / NUM_INTEGERS;
+
+        DecimalFormat df = new DecimalFormat("#");
+        df.setMaximumFractionDigits(8);
+
         BufferedWriter writer = null;
         try {
             // Create file
-              File conclusionFile = new File("Conclusions.txt");
-
-            System.out.println(conclusionFile.getCanonicalPath());
+            File conclusionFile = new File("Conclusions.txt");
 
             writer = new BufferedWriter(new FileWriter(conclusionFile));
-            writer.write("Out of 100 pairs of integers, the improved(?) Euclidís algorithm outperformed the original one in xx pairs; and the average saved/wasted time for one pair of integers was xx milliseconds.");
+            writer.write("Out of 100 pairs of integers, the improved(?) Euclid's algorithm outperformed the original one in "
+                    + numPairs + " pairs; and the average saved/wasted time for one pair of integers was " + df.format(avgTimeSaved) + " milliseconds.");
+
+            System.out.println("\n\nConclusions.txt document created successfully");
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -165,13 +201,13 @@ class Program1 {
                 // Close the writer
                 assert writer != null;
                 writer.close();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 
     // Writes the Excel file
-    private static void writeExcelFile(List<GCDTableRow> gcdTableAlg1,  List<GCDTableRow> gcdTableAlg2)
-    {
+    private static void writeExcelFile(List<GCDTableRow> gcdTableAlg1, List<GCDTableRow> gcdTableAlg2) {
         // Create new Excel workbook
         HSSFWorkbook workbook = new HSSFWorkbook();
 
@@ -199,7 +235,7 @@ class Program1 {
         addStatisticsHeaderRowAndData(gcdTableAlg2.stream().map(GCDTableRow::getTimeSpent).collect(Collectors.toList()), style, improvedEuclidStatisticsSheet);
 
         // Gather rows for Original_Euclid_Results
-        for(int i = 0; i < gcdTableAlg1.size(); i++) {
+        for (int i = 0; i < gcdTableAlg1.size(); i++) {
             data.put(String.valueOf(i + 1), gcdTableAlg1.get(i).getRowAsArray());
         }
 
@@ -209,7 +245,7 @@ class Program1 {
         data = new HashMap<String, Object[]>();
 
         // Gather rows for Improved_Euclid_Results
-        for(int i = 0; i < gcdTableAlg2.size(); i++) {
+        for (int i = 0; i < gcdTableAlg2.size(); i++) {
             data.put(String.valueOf(i + 1), gcdTableAlg2.get(i).getRowAsArray());
         }
 
@@ -237,30 +273,28 @@ class Program1 {
     }
 
     // Create each row and cell of a data map
-    private static void createCells(Map<String, Object[]> data, HSSFCellStyle style, HSSFSheet sheet)
-    {
+    private static void createCells(Map<String, Object[]> data, HSSFCellStyle style, HSSFSheet sheet) {
         Set<String> keyset = data.keySet();
         int rownum = 1;
         for (String key : keyset) {
             Row row = sheet.createRow(rownum++);
-            Object [] objArr = data.get(key);
+            Object[] objArr = data.get(key);
             int cellnum = 0;
             for (Object obj : objArr) {
                 Cell cell = row.createCell(cellnum++);
                 cell.setCellStyle(style);
-                if(obj instanceof Integer)
-                    cell.setCellValue((Integer)obj);
-                else if(obj instanceof String)
-                    cell.setCellValue((String)obj);
-                else if(obj instanceof Double)
-                    cell.setCellValue((Double)obj);
+                if (obj instanceof Integer)
+                    cell.setCellValue((Integer) obj);
+                else if (obj instanceof String)
+                    cell.setCellValue((String) obj);
+                else if (obj instanceof Double)
+                    cell.setCellValue((Double) obj);
             }
         }
     }
 
     // Create the header row for a Results sheet
-    private static void addResultsHeaderRow(HSSFCellStyle style, HSSFSheet sheet)
-    {
+    private static void addResultsHeaderRow(HSSFCellStyle style, HSSFSheet sheet) {
         //Set Column Widths
         sheet.setColumnWidth(0, 6000);
         sheet.setColumnWidth(1, 6000);
@@ -285,8 +319,7 @@ class Program1 {
 
     // Create the header row(s) and data cells for a Statistics sheet
     // Performs the statistics
-    private static void addStatisticsHeaderRowAndData(List<Double> data, HSSFCellStyle style, HSSFSheet sheet)
-    {
+    private static void addStatisticsHeaderRowAndData(List<Double> data, HSSFCellStyle style, HSSFSheet sheet) {
         //Set Column Widths
         sheet.setColumnWidth(0, 6000);
         sheet.setColumnWidth(1, 6000);
@@ -343,13 +376,11 @@ class Program1 {
     }
 
     // The Euclid Algorithm 1 method
-    private static int EuclidAlgorithm1(int a, int b)
-    {
+    private static int EuclidAlgorithm1(int a, int b) {
         int quotient = 0;
         int remainder = -1;
 
-        while (0 != remainder)
-        {
+        while (0 != remainder) {
             quotient = a / b;
             remainder = a - quotient * b;
             a = b;
@@ -361,30 +392,24 @@ class Program1 {
     }
 
     // The Euclid Algorithm 2 method
-    private static int EuclidAlgorithm2(int a, int b)
-    {
+    private static int EuclidAlgorithm2(int a, int b) {
         // Guarantee a >= b > 0
-        if(a > 0 && b > 0)
-        {
-            if(a <= b)
-            {
+        if (a > 0 && b > 0) {
+            if (a <= b) {
                 // Swap a and b
                 int temp = a;
                 a = b;
                 b = temp;
             }
-        }
-        else
-        {
+        } else {
             return 0;
         }
 
         int remainder = -1;
 
-        while (0 != remainder)
-        {
-           remainder = a - b;
-            if(remainder >= b) {
+        while (0 != remainder) {
+            remainder = a - b;
+            if (remainder >= b) {
                 remainder = remainder - b;
                 if (remainder >= b) {
                     remainder = remainder - b;
